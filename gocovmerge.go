@@ -97,7 +97,7 @@ func dumpProfiles(profiles []*cover.Profile, out io.Writer, regExp string) {
 }
 
 func main() {
-	regExp := flag.String("regexp", "", "Use regexp to filter sources of coverage")
+	regExp := flag.String("filter", "", "Use regexp to filter sources of coverage")
 	flag.Parse()
 
 	var merged []*cover.Profile
