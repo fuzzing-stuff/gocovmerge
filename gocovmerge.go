@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"sort"
 
 	"golang.org/x/tools/cover"
@@ -80,19 +81,23 @@ func addProfile(profiles []*cover.Profile, p *cover.Profile) []*cover.Profile {
 	return profiles
 }
 
-func dumpProfiles(profiles []*cover.Profile, out io.Writer) {
+func dumpProfiles(profiles []*cover.Profile, out io.Writer, regExp string) {
 	if len(profiles) == 0 {
 		return
 	}
+	re := regexp.MustCompile(regExp)
 	fmt.Fprintf(out, "mode: %s\n", profiles[0].Mode)
 	for _, p := range profiles {
 		for _, b := range p.Blocks {
-			fmt.Fprintf(out, "%s:%d.%d,%d.%d %d %d\n", p.FileName, b.StartLine, b.StartCol, b.EndLine, b.EndCol, b.NumStmt, b.Count)
+			if re.MatchString(p.FileName) {
+				fmt.Fprintf(out, "%s:%d.%d,%d.%d %d %d\n", p.FileName, b.StartLine, b.StartCol, b.EndLine, b.EndCol, b.NumStmt, b.Count)
+			}
 		}
 	}
 }
 
 func main() {
+	regExp := flag.String("regexp", "", "Use regexp to filter sources of coverage")
 	flag.Parse()
 
 	var merged []*cover.Profile
@@ -107,5 +112,5 @@ func main() {
 		}
 	}
 
-	dumpProfiles(merged, os.Stdout)
+	dumpProfiles(merged, os.Stdout, *regExp)
 }
